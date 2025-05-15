@@ -7,21 +7,27 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"email_sender/config"
 	"email_sender/db"
 	"email_sender/email"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Загрузка переменных окружения из .env
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("❌ Не удалось загрузить .env файл (он должен быть рядом с main.go)")
+	// Определяем абсолютный путь к .env
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("❌ Не удалось получить текущую директорию: %v", err)
 	}
-	config.Init() // 👈 ВАЖНО: подгружаем переменные
 
-	// Проверка SMTP-переменных
+	envPath := cwd + "/.env"
+	if err := godotenv.Load(envPath); err != nil {
+		log.Fatalf("❌ Не удалось загрузить .env по пути %s: %v", envPath, err)
+	}
+	config.Init()
+
+	// Проверка SMTP-настроек
 	if config.FromEmail == "" || config.SMTPUser == "" || config.SMTPPass == "" {
 		log.Fatal("❌ SMTP-настройки не заданы. Проверь .env или config/config.go")
 	}
@@ -73,7 +79,7 @@ func main() {
 		log.Printf("✅ Письмо успешно отправлено: %s", e.Email)
 		db.MarkAsSent(e.ID)
 
-		// Задержка от 5 до 120 минут
+		// Рандомная задержка от 5 до 120 минут
 		minDelay := 5   // минут
 		maxDelay := 120 // минут
 
