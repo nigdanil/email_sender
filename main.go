@@ -73,8 +73,13 @@ func main() {
 		log.Printf("✅ Письмо успешно отправлено: %s", e.Email)
 		db.MarkAsSent(e.ID)
 
-		// Рандомная задержка между 45 и 90 сек
-		delay := time.Duration(45+rand.Intn(46)) * time.Second
+		// Задержка от 5 до 120 минут
+		minDelay := 5   // минут
+		maxDelay := 120 // минут
+
+		delayMinutes := minDelay + rand.Intn(maxDelay-minDelay+1)
+		delay := time.Duration(delayMinutes) * time.Minute
+
 		log.Printf("🕒 Задержка перед следующей отправкой: %v", delay)
 		time.Sleep(delay)
 	}
